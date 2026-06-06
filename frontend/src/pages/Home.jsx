@@ -34,13 +34,12 @@ export default function Home() {
   return (
     <div className="pt-16">
       {/* ── HERO BANNER ── */}
-      <section className="relative overflow-hidden" style={{ minHeight: '75vh' }}>
+      <section>
         <img
           src="/banner.jpg"
           alt="VH24 SPORT Phân Phối 2026"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className="w-full h-auto block"
         />
-        <div className="relative min-h-[75vh]" />
       </section>
 
       {/* ── STATS BAR ── */}
