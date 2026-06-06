@@ -10,6 +10,7 @@ import Contact from './pages/Contact';
 import About from './pages/About';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import FloatingZalo from './components/FloatingZalo';
 
 function ProtectedAdmin({ children }) {
   const token = localStorage.getItem('vh24_admin_token');
@@ -32,6 +33,7 @@ function PublicLayout() {
         </Routes>
       </main>
       <Footer />
+      <FloatingZalo />
     </div>
   );
 }
