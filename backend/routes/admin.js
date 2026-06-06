@@ -93,11 +93,22 @@ module.exports = (db) => {
     })));
   });
 
+  // Resolve brand_name text → brand_id (find or create)
+  function resolveBrand(brand_name) {
+    if (!brand_name || !brand_name.trim()) return null;
+    const name = brand_name.trim();
+    const existing = db.prepare('SELECT id FROM brands WHERE lower(name) = lower(?)').get(name);
+    if (existing) return existing.id;
+    const r = db.prepare('INSERT INTO brands (name, slug) VALUES (?, ?)').run(name, slugify(name));
+    return r.lastInsertRowid;
+  }
+
   router.post('/products', auth, (req, res) => {
-    const { name, brand_id, category_id, price, sale_price, description,
+    const { name, brand_name, category_id, price, sale_price, description,
       image, images, sizes, colors, is_featured, is_new, stock, rating, reviews_count } = req.body;
     if (!name || !price) return res.status(400).json({ error: 'Thiếu tên hoặc giá' });
 
+    const brand_id = resolveBrand(brand_name);
     let slug = slugify(name);
     let final = slug;
     let n = 1;
@@ -117,10 +128,11 @@ module.exports = (db) => {
 
   router.put('/products/:id', auth, (req, res) => {
     const { id } = req.params;
-    const { name, brand_id, category_id, price, sale_price, description,
+    const { name, brand_name, category_id, price, sale_price, description,
       image, images, sizes, colors, is_featured, is_new, stock, rating, reviews_count } = req.body;
     if (!name || !price) return res.status(400).json({ error: 'Thiếu tên hoặc giá' });
 
+    const brand_id = resolveBrand(brand_name);
     let slug = slugify(name);
     let final = slug;
     let n = 1;

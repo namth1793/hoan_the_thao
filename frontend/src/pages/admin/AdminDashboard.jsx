@@ -10,14 +10,14 @@ const getAuth = () => ({
 });
 
 const defaultForm = {
-  name: '', brand_id: '', category_id: '',
+  name: '', brand_name: '', category_id: '',
   price: '', sale_price: '', description: '',
   stock: 100, rating: 5.0, reviews_count: 0,
   is_featured: false, is_new: false,
   sizes: [], colors: [],
 };
 
-// ── Inline sub-components ──────────────────────────────────────────────────
+// ── Sub-components ──────────────────────────────────────────────────────────
 
 function StatCard({ label, value, color }) {
   return (
@@ -66,14 +66,10 @@ function TagInput({ tags, onChange, placeholder }) {
 function ImageUploadArea({ existingImages, onRemoveExisting, newFiles, onAddFiles, onRemoveNew, uploading }) {
   const fileRef = useRef();
   const allCount = existingImages.length + newFiles.length;
-
   return (
     <div>
-      <p className="text-xs text-gray-500 mb-2">
-        {allCount} ảnh · Ảnh đầu tiên là ảnh chính
-      </p>
+      <p className="text-xs text-gray-500 mb-2">{allCount} ảnh · Ảnh đầu tiên là ảnh chính</p>
       <div className="grid grid-cols-3 gap-2 mb-3">
-        {/* Existing images */}
         {existingImages.map((url, i) => (
           <div key={`ex-${i}`} className="relative group aspect-square rounded-xl overflow-hidden"
             style={{ backgroundColor: '#F7F9FC', border: '1px solid rgba(5,5,31,0.08)' }}>
@@ -88,7 +84,6 @@ function ImageUploadArea({ existingImages, onRemoveExisting, newFiles, onAddFile
               style={{ backgroundColor: '#EF4444', color: '#fff' }}>×</button>
           </div>
         ))}
-        {/* New file previews */}
         {newFiles.map((f, i) => (
           <div key={`new-${i}`} className="relative group aspect-square rounded-xl overflow-hidden"
             style={{ backgroundColor: '#F7F9FC', border: '2px dashed #2AAEDF' }}>
@@ -100,7 +95,6 @@ function ImageUploadArea({ existingImages, onRemoveExisting, newFiles, onAddFile
               style={{ backgroundColor: '#EF4444', color: '#fff' }}>×</button>
           </div>
         ))}
-        {/* Add button */}
         <button type="button" onClick={() => fileRef.current.click()}
           className="aspect-square rounded-xl flex flex-col items-center justify-center gap-1 transition-all"
           style={{ border: '2px dashed rgba(5,5,31,0.15)', color: '#718096' }}
@@ -127,16 +121,15 @@ function ImageUploadArea({ existingImages, onRemoveExisting, newFiles, onAddFile
   );
 }
 
-// ── Main component ─────────────────────────────────────────────────────────
+// ── Main component ──────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
-  const [brands, setBrands] = useState([]);
   const [cats, setCats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [brandFilter, setBrandFilter] = useState('');
+  const [catFilter, setCatFilter] = useState('');
 
   // Form state
   const [showForm, setShowForm] = useState(false);
@@ -147,33 +140,26 @@ export default function AdminDashboard() {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
-
-  // Delete confirm
   const [deleteId, setDeleteId] = useState(null);
-
-  // Toast
   const [toast, setToast] = useState('');
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [p, b, c] = await Promise.all([
+      const [p, c] = await Promise.all([
         axios.get(`${API}/admin/products`, getAuth()),
-        axios.get(`${API}/admin/brands`, getAuth()),
-        axios.get(`${API}/admin/categories`, getAuth()),
+        axios.get(`${API}/categories`),
       ]);
       setProducts(p.data);
-      setBrands(b.data);
       setCats(c.data);
     } catch (err) {
-      if (err.response?.status === 401) { navigate('/admin/login'); }
+      if (err.response?.status === 401) navigate('/admin/login');
     } finally { setLoading(false); }
   }, [navigate]);
 
   useEffect(() => {
-    const token = localStorage.getItem('vh24_admin_token');
-    if (!token) { navigate('/admin/login'); return; }
+    if (!localStorage.getItem('vh24_admin_token')) { navigate('/admin/login'); return; }
     fetchAll();
   }, [fetchAll, navigate]);
 
@@ -183,10 +169,19 @@ export default function AdminDashboard() {
     navigate('/admin/login');
   };
 
+  // Parent cats only (for selects/filters)
+  const parentCats = cats.filter(c => !c.parent_id);
+
+  const getChildCatIds = (parentSlug) => {
+    const parent = cats.find(c => c.slug === parentSlug && !c.parent_id);
+    if (!parent) return [];
+    return cats.filter(c => Number(c.parent_id) === Number(parent.id)).map(c => c.id);
+  };
+
   const openAdd = () => {
     setEditId(null);
     const firstChild = cats.find(c => c.parent_id);
-    setForm({ ...defaultForm, brand_id: brands[0]?.id || '', category_id: firstChild?.id || '' });
+    setForm({ ...defaultForm, category_id: firstChild?.id || '' });
     setExistingImages([]);
     setNewFiles([]);
     setFormError('');
@@ -196,15 +191,14 @@ export default function AdminDashboard() {
   const openEdit = (p) => {
     setEditId(p.id);
     setForm({
-      name: p.name, brand_id: p.brand_id, category_id: p.category_id,
+      name: p.name, brand_name: p.brand_name || '', category_id: p.category_id || '',
       price: p.price, sale_price: p.sale_price || '',
       description: p.description || '', stock: p.stock,
       rating: p.rating, reviews_count: p.reviews_count,
       is_featured: p.is_featured === 1, is_new: p.is_new === 1,
       sizes: p.sizes || [], colors: p.colors || [],
     });
-    const imgs = [p.image, ...(p.images || [])].filter(Boolean);
-    setExistingImages(imgs);
+    setExistingImages([p.image, ...(p.images || [])].filter(Boolean));
     setNewFiles([]);
     setFormError('');
     setShowForm(true);
@@ -217,18 +211,16 @@ export default function AdminDashboard() {
   };
 
   const handleAddFiles = (files) => {
-    const previews = files.map(f => ({ file: f, preview: URL.createObjectURL(f) }));
-    setNewFiles(prev => [...prev, ...previews]);
+    setNewFiles(prev => [...prev, ...files.map(f => ({ file: f, preview: URL.createObjectURL(f) }))]);
   };
 
   const handleSave = async () => {
     if (!form.name.trim()) { setFormError('Vui lòng nhập tên sản phẩm'); return; }
     if (!form.price) { setFormError('Vui lòng nhập giá sản phẩm'); return; }
+    if (!form.category_id) { setFormError('Vui lòng chọn danh mục'); return; }
     setFormError('');
     setSaving(true);
-
     try {
-      // 1. Upload new images
       const uploadedUrls = [];
       if (newFiles.length > 0) {
         setUploading(true);
@@ -236,17 +228,12 @@ export default function AdminDashboard() {
           const fd = new FormData();
           fd.append('image', file);
           const res = await axios.post(`${API}/admin/upload`, fd, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('vh24_admin_token')}`,
-              'Content-Type': 'multipart/form-data',
-            },
+            headers: { Authorization: `Bearer ${localStorage.getItem('vh24_admin_token')}`, 'Content-Type': 'multipart/form-data' },
           });
           uploadedUrls.push(res.data.url);
         }
         setUploading(false);
       }
-
-      // 2. Combine images
       const allImages = [...existingImages, ...uploadedUrls];
       const payload = {
         ...form,
@@ -256,23 +243,18 @@ export default function AdminDashboard() {
         image: allImages[0] || '',
         images: allImages.slice(1),
       };
-
       if (editId) {
         await axios.put(`${API}/admin/products/${editId}`, payload, getAuth());
-        showToast('✅ Đã cập nhật sản phẩm!');
+        showToast('Đã cập nhật sản phẩm!');
       } else {
         await axios.post(`${API}/admin/products`, payload, getAuth());
-        showToast('✅ Đã thêm sản phẩm!');
+        showToast('Đã thêm sản phẩm!');
       }
-
       closeForm();
       fetchAll();
     } catch (err) {
       setFormError(err.response?.data?.error || 'Lỗi: ' + err.message);
-    } finally {
-      setSaving(false);
-      setUploading(false);
-    }
+    } finally { setSaving(false); setUploading(false); }
   };
 
   const handleDelete = async () => {
@@ -280,23 +262,26 @@ export default function AdminDashboard() {
       await axios.delete(`${API}/admin/products/${deleteId}`, getAuth());
       setDeleteId(null);
       fetchAll();
-      showToast('🗑️ Đã xóa sản phẩm!');
+      showToast('Đã xóa sản phẩm!');
     } catch { setDeleteId(null); }
   };
 
+  // Filter logic
+  const filteredChildIds = catFilter ? getChildCatIds(catFilter) : [];
   const filtered = products.filter(p => {
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) ||
       (p.brand_name || '').toLowerCase().includes(search.toLowerCase());
-    const matchBrand = !brandFilter || String(p.brand_id) === brandFilter;
-    return matchSearch && matchBrand;
+    const matchCat = !catFilter || filteredChildIds.includes(p.category_id);
+    return matchSearch && matchCat;
   });
 
-  const lowStock = products.filter(p => p.stock <= 10 && p.stock > 0).length;
+  const lowStock  = products.filter(p => p.stock <= 10 && p.stock > 0).length;
   const outOfStock = products.filter(p => p.stock <= 0).length;
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F7F9FC' }}>
-      {/* ── Admin Navbar ── */}
+
+      {/* Navbar */}
       <nav className="sticky top-0 z-40 shadow-lg" style={{ backgroundColor: '#05051F' }}>
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -315,7 +300,7 @@ export default function AdminDashboard() {
               style={{ color: 'rgba(255,255,255,0.6)', backgroundColor: 'rgba(255,255,255,0.07)' }}
               onMouseEnter={e => e.currentTarget.style.color = '#fff'}
               onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}>
-              🌐 Xem web
+              Xem web
             </Link>
             <button onClick={logout}
               className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
@@ -329,28 +314,33 @@ export default function AdminDashboard() {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* ── Stats ── */}
+
+        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <StatCard label="Tổng sản phẩm" value={products.length} color="#05051F" />
-          <StatCard label="Thương hiệu" value={brands.length} color="#2AAEDF" />
+          <StatCard label="Danh mục" value={parentCats.length} color="#2AAEDF" />
           <StatCard label="Sắp hết hàng" value={lowStock} color="#F59E0B" />
           <StatCard label="Hết hàng" value={outOfStock} color="#EF4444" />
         </div>
 
-        {/* ── Toolbar ── */}
+        {/* Toolbar */}
         <div className="flex flex-wrap gap-3 items-center justify-between mb-5">
           <div className="flex flex-wrap gap-2">
             <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="🔍  Tìm sản phẩm, thương hiệu..."
-              className="border rounded-xl px-4 py-2.5 text-sm w-60 outline-none transition-colors"
+              placeholder="Tìm sản phẩm, thương hiệu..."
+              className="border rounded-xl px-4 py-2.5 text-sm w-56 outline-none transition-colors"
               style={{ borderColor: '#E2E8F0', backgroundColor: '#fff' }}
               onFocus={e => e.target.style.borderColor = '#2AAEDF'}
               onBlur={e => e.target.style.borderColor = '#E2E8F0'} />
-            <select value={brandFilter} onChange={e => setBrandFilter(e.target.value)}
+
+            {/* Category filter */}
+            <select value={catFilter} onChange={e => setCatFilter(e.target.value)}
               className="border rounded-xl px-3 py-2.5 text-sm bg-white outline-none cursor-pointer"
-              style={{ borderColor: '#E2E8F0' }}>
-              <option value="">Tất cả thương hiệu</option>
-              {brands.map(b => <option key={b.id} value={String(b.id)}>{b.name}</option>)}
+              style={{ borderColor: catFilter ? '#2AAEDF' : '#E2E8F0', color: catFilter ? '#2AAEDF' : '#4A5568', fontWeight: catFilter ? '700' : '400' }}>
+              <option value="">Tất cả danh mục</option>
+              {parentCats.map(c => (
+                <option key={c.id} value={c.slug}>{c.name}</option>
+              ))}
             </select>
           </div>
           <button onClick={openAdd}
@@ -365,7 +355,7 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        {/* ── Product Table ── */}
+        {/* Product Table */}
         <div className="bg-white rounded-2xl overflow-hidden shadow-sm" style={{ border: '1px solid rgba(5,5,31,0.08)' }}>
           {loading ? (
             <div className="py-20 flex justify-center">
@@ -389,7 +379,6 @@ export default function AdminDashboard() {
                   {filtered.map(p => (
                     <tr key={p.id} className="hover:bg-gray-50 transition-colors"
                       style={{ borderBottom: '1px solid rgba(5,5,31,0.04)' }}>
-                      {/* Product */}
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <img src={p.image || 'https://placehold.co/48/EBF8FD/2AAEDF?text=VH'}
@@ -398,20 +387,15 @@ export default function AdminDashboard() {
                             style={{ backgroundColor: '#F7F9FC', border: '1px solid rgba(5,5,31,0.06)' }}
                             onError={e => e.target.src = 'https://placehold.co/48/EBF8FD/2AAEDF?text=VH'} />
                           <div className="min-w-0">
-                            <p className="font-semibold text-sm line-clamp-2 leading-snug" style={{ color: '#05051F' }}>
-                              {p.name}
-                            </p>
+                            <p className="font-semibold text-sm line-clamp-2 leading-snug" style={{ color: '#05051F' }}>{p.name}</p>
                             <p className="text-xs mt-0.5" style={{ color: '#718096' }}>
-                              {[p.images?.length > 0 ? `${1 + (p.images?.length || 0)} ảnh` : '1 ảnh'].join(' · ')}
+                              {1 + (p.images?.length || 0)} ảnh
                             </p>
                           </div>
                         </div>
                       </td>
-                      {/* Brand */}
-                      <td className="px-4 py-3 text-sm" style={{ color: '#4A5568' }}>{p.brand_name}</td>
-                      {/* Category */}
-                      <td className="px-4 py-3 text-sm" style={{ color: '#4A5568' }}>{p.category_name}</td>
-                      {/* Price */}
+                      <td className="px-4 py-3 text-sm" style={{ color: '#4A5568' }}>{p.brand_name || '—'}</td>
+                      <td className="px-4 py-3 text-sm" style={{ color: '#4A5568' }}>{p.category_name || '—'}</td>
                       <td className="px-4 py-3">
                         <p className="font-bold text-sm" style={{ color: '#2AAEDF' }}>
                           {(p.sale_price || p.price).toLocaleString()}đ
@@ -420,14 +404,12 @@ export default function AdminDashboard() {
                           <p className="text-xs line-through" style={{ color: '#718096' }}>{p.price.toLocaleString()}đ</p>
                         )}
                       </td>
-                      {/* Stock */}
                       <td className="px-4 py-3">
                         <span className="text-sm font-bold"
                           style={{ color: p.stock <= 0 ? '#EF4444' : p.stock <= 10 ? '#F59E0B' : '#22C55E' }}>
                           {p.stock}
                         </span>
                       </td>
-                      {/* Status badges */}
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1">
                           {p.is_featured === 1 && (
@@ -440,7 +422,6 @@ export default function AdminDashboard() {
                           )}
                         </div>
                       </td>
-                      {/* Actions */}
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <button onClick={() => openEdit(p)}
@@ -448,14 +429,14 @@ export default function AdminDashboard() {
                             style={{ backgroundColor: 'rgba(42,174,223,0.1)', color: '#2AAEDF' }}
                             onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(42,174,223,0.2)'}
                             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(42,174,223,0.1)'}>
-                            ✏️ Sửa
+                            Sửa
                           </button>
                           <button onClick={() => setDeleteId(p.id)}
                             className="text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
                             style={{ backgroundColor: 'rgba(239,68,68,0.08)', color: '#EF4444' }}
                             onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.18)'}
                             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.08)'}>
-                            🗑️ Xóa
+                            Xóa
                           </button>
                         </div>
                       </td>
@@ -464,7 +445,6 @@ export default function AdminDashboard() {
                   {filtered.length === 0 && !loading && (
                     <tr>
                       <td colSpan={7} className="text-center py-16" style={{ color: '#718096' }}>
-                        <p className="text-3xl mb-2">📦</p>
                         Không tìm thấy sản phẩm
                       </td>
                     </tr>
@@ -479,7 +459,7 @@ export default function AdminDashboard() {
         </p>
       </div>
 
-      {/* ── Delete Confirm Dialog ── */}
+      {/* Delete Confirm Dialog */}
       {deleteId && (
         <>
           <div className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm" onClick={() => setDeleteId(null)} />
@@ -492,32 +472,25 @@ export default function AdminDashboard() {
                 </svg>
               </div>
               <h3 className="font-black text-lg text-center mb-1" style={{ color: '#05051F' }}>Xóa sản phẩm?</h3>
-              <p className="text-sm text-center mb-6" style={{ color: '#718096' }}>
-                Hành động này không thể hoàn tác.
-              </p>
+              <p className="text-sm text-center mb-6" style={{ color: '#718096' }}>Hành động này không thể hoàn tác.</p>
               <div className="flex gap-3">
                 <button onClick={() => setDeleteId(null)}
                   className="flex-1 py-3 rounded-xl font-semibold text-sm border-2 transition-colors"
-                  style={{ borderColor: '#E2E8F0', color: '#4A5568' }}>
-                  Hủy
-                </button>
+                  style={{ borderColor: '#E2E8F0', color: '#4A5568' }}>Hủy</button>
                 <button onClick={handleDelete}
-                  className="flex-1 py-3 rounded-xl font-bold text-sm text-white transition-colors"
-                  style={{ backgroundColor: '#EF4444' }}>
-                  Xóa
-                </button>
+                  className="flex-1 py-3 rounded-xl font-bold text-sm text-white"
+                  style={{ backgroundColor: '#EF4444' }}>Xóa</button>
               </div>
             </div>
           </div>
         </>
       )}
 
-      {/* ── Product Form Drawer ── */}
+      {/* Product Form Drawer */}
       {showForm && (
         <>
           <div className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm" onClick={closeForm} />
           <div className="fixed right-0 top-0 h-full w-full max-w-xl bg-white z-50 shadow-2xl flex flex-col">
-            {/* Drawer header */}
             <div className="flex items-center justify-between p-5 border-b" style={{ backgroundColor: '#05051F' }}>
               <div>
                 <p className="font-black text-white">{editId ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}</p>
@@ -525,16 +498,13 @@ export default function AdminDashboard() {
                   {editId ? 'Cập nhật thông tin & hình ảnh' : 'Điền thông tin sản phẩm'}
                 </p>
               </div>
-              <button onClick={closeForm}
-                className="p-2 rounded-lg transition-opacity opacity-60 hover:opacity-100"
-                style={{ color: '#fff' }}>
+              <button onClick={closeForm} className="p-2 rounded-lg opacity-60 hover:opacity-100" style={{ color: '#fff' }}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
                 </svg>
               </button>
             </div>
 
-            {/* Drawer body */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {formError && (
                 <div className="p-3 rounded-xl text-sm font-medium"
@@ -543,11 +513,9 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {/* ── Hình ảnh ── */}
+              {/* Hình ảnh */}
               <section>
-                <h3 className="font-black text-sm uppercase tracking-wider mb-3" style={{ color: '#05051F' }}>
-                  📷 Hình ảnh sản phẩm
-                </h3>
+                <h3 className="font-black text-sm uppercase tracking-wider mb-3" style={{ color: '#05051F' }}>Hình ảnh sản phẩm</h3>
                 <ImageUploadArea
                   existingImages={existingImages}
                   onRemoveExisting={(i) => setExistingImages(prev => prev.filter((_, idx) => idx !== i))}
@@ -561,15 +529,13 @@ export default function AdminDashboard() {
                 />
               </section>
 
-              {/* ── Thông tin cơ bản ── */}
+              {/* Thông tin cơ bản */}
               <section>
-                <h3 className="font-black text-sm uppercase tracking-wider mb-3" style={{ color: '#05051F' }}>
-                  📋 Thông tin cơ bản
-                </h3>
+                <h3 className="font-black text-sm uppercase tracking-wider mb-3" style={{ color: '#05051F' }}>Thông tin cơ bản</h3>
                 <div className="space-y-3">
                   <FormField label="Tên sản phẩm *">
                     <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                      placeholder="VD: Nike Mercurial Superfly 9 Elite FG"
+                      placeholder="VD: Giày Wika AG Speed V3 - Xanh"
                       className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none transition-colors"
                       style={{ borderColor: '#E2E8F0' }}
                       onFocus={e => e.target.style.borderColor = '#2AAEDF'}
@@ -577,25 +543,44 @@ export default function AdminDashboard() {
                   </FormField>
 
                   <div className="grid grid-cols-2 gap-3">
+                    {/* Brand — free text */}
                     <FormField label="Thương hiệu">
-                      <select value={form.brand_id} onChange={e => setForm({ ...form, brand_id: e.target.value })}
-                        className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none bg-white cursor-pointer"
-                        style={{ borderColor: '#E2E8F0' }}>
-                        {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                      </select>
+                      <input
+                        value={form.brand_name}
+                        onChange={e => setForm({ ...form, brand_name: e.target.value })}
+                        placeholder="VD: Wika, Kamito, JP..."
+                        className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none transition-colors"
+                        style={{ borderColor: '#E2E8F0' }}
+                        onFocus={e => e.target.style.borderColor = '#2AAEDF'}
+                        onBlur={e => e.target.style.borderColor = '#E2E8F0'} />
                     </FormField>
-                    <FormField label="Danh mục">
-                      <select value={form.category_id} onChange={e => setForm({ ...form, category_id: e.target.value })}
-                        className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none bg-white cursor-pointer"
-                        style={{ borderColor: '#E2E8F0' }}>
-                        {cats.filter(c => !c.parent_id).map(parent => (
-                          <optgroup key={parent.id} label={parent.name}>
-                            {cats.filter(c => c.parent_id === parent.id).map(child => (
-                              <option key={child.id} value={child.id}>{child.name}</option>
-                            ))}
-                          </optgroup>
-                        ))}
-                      </select>
+
+                    {/* Category — grouped select */}
+                    <FormField label="Danh mục *">
+                      {cats.length === 0 ? (
+                        <div className="border rounded-xl px-4 py-2.5 text-sm" style={{ borderColor: '#E2E8F0', color: '#718096' }}>
+                          Đang tải danh mục...
+                        </div>
+                      ) : (
+                        <select
+                          value={form.category_id}
+                          onChange={e => setForm({ ...form, category_id: Number(e.target.value) })}
+                          className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none bg-white cursor-pointer"
+                          style={{ borderColor: '#E2E8F0' }}
+                          onFocus={e => e.target.style.borderColor = '#2AAEDF'}
+                          onBlur={e => e.target.style.borderColor = '#E2E8F0'}>
+                          <option value="">-- Chọn danh mục --</option>
+                          {parentCats.map(parent => (
+                            <optgroup key={parent.id} label={parent.name}>
+                              {cats
+                                .filter(c => Number(c.parent_id) === Number(parent.id))
+                                .map(child => (
+                                  <option key={child.id} value={child.id}>{child.name}</option>
+                                ))}
+                            </optgroup>
+                          ))}
+                        </select>
+                      )}
                     </FormField>
                   </div>
 
@@ -610,15 +595,13 @@ export default function AdminDashboard() {
                 </div>
               </section>
 
-              {/* ── Giá & Tồn kho ── */}
+              {/* Giá & Tồn kho */}
               <section>
-                <h3 className="font-black text-sm uppercase tracking-wider mb-3" style={{ color: '#05051F' }}>
-                  💰 Giá & Tồn kho
-                </h3>
+                <h3 className="font-black text-sm uppercase tracking-wider mb-3" style={{ color: '#05051F' }}>Giá & Tồn kho</h3>
                 <div className="grid grid-cols-3 gap-3">
                   <FormField label="Giá gốc (đ) *">
                     <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })}
-                      placeholder="5000000"
+                      placeholder="450000"
                       className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none transition-colors"
                       style={{ borderColor: '#E2E8F0' }}
                       onFocus={e => e.target.style.borderColor = '#2AAEDF'}
@@ -626,7 +609,7 @@ export default function AdminDashboard() {
                   </FormField>
                   <FormField label="Giá sale (đ)">
                     <input type="number" value={form.sale_price} onChange={e => setForm({ ...form, sale_price: e.target.value })}
-                      placeholder="Bỏ trống nếu không"
+                      placeholder="Để trống nếu không"
                       className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none transition-colors"
                       style={{ borderColor: '#E2E8F0' }}
                       onFocus={e => e.target.style.borderColor = '#2AAEDF'}
@@ -642,11 +625,9 @@ export default function AdminDashboard() {
                 </div>
               </section>
 
-              {/* ── Sizes ── */}
+              {/* Sizes */}
               <section>
-                <h3 className="font-black text-sm uppercase tracking-wider mb-3" style={{ color: '#05051F' }}>
-                  👟 Size có sẵn
-                </h3>
+                <h3 className="font-black text-sm uppercase tracking-wider mb-3" style={{ color: '#05051F' }}>Size có sẵn</h3>
                 <div className="flex flex-wrap gap-2">
                   {SIZES.map(s => (
                     <button key={s} type="button"
@@ -665,11 +646,9 @@ export default function AdminDashboard() {
                 </div>
               </section>
 
-              {/* ── Màu sắc ── */}
+              {/* Màu sắc */}
               <section>
-                <h3 className="font-black text-sm uppercase tracking-wider mb-3" style={{ color: '#05051F' }}>
-                  🎨 Màu sắc
-                </h3>
+                <h3 className="font-black text-sm uppercase tracking-wider mb-3" style={{ color: '#05051F' }}>Màu sắc</h3>
                 <TagInput
                   tags={form.colors}
                   onChange={colors => setForm(f => ({ ...f, colors }))}
@@ -677,16 +656,14 @@ export default function AdminDashboard() {
                 />
               </section>
 
-              {/* ── Trạng thái ── */}
+              {/* Trạng thái */}
               <section>
-                <h3 className="font-black text-sm uppercase tracking-wider mb-3" style={{ color: '#05051F' }}>
-                  🏷️ Trạng thái
-                </h3>
+                <h3 className="font-black text-sm uppercase tracking-wider mb-3" style={{ color: '#05051F' }}>Trạng thái</h3>
                 <div className="flex gap-4">
                   {[
-                    { key: 'is_featured', label: 'Sản phẩm nổi bật', icon: '⭐' },
-                    { key: 'is_new', label: 'Hàng mới về', icon: '🆕' },
-                  ].map(({ key, label, icon }) => (
+                    { key: 'is_featured', label: 'Sản phẩm nổi bật' },
+                    { key: 'is_new', label: 'Hàng mới về' },
+                  ].map(({ key, label }) => (
                     <label key={key} className="flex items-center gap-3 cursor-pointer p-4 rounded-xl flex-1 transition-all"
                       style={{
                         border: `2px solid ${form[key] ? '#2AAEDF' : 'rgba(5,5,31,0.1)'}`,
@@ -703,7 +680,7 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                       <span className="text-sm font-semibold" style={{ color: form[key] ? '#2AAEDF' : '#4A5568' }}>
-                        {icon} {label}
+                        {label}
                       </span>
                     </label>
                   ))}
@@ -713,15 +690,11 @@ export default function AdminDashboard() {
 
             {/* Drawer footer */}
             <div className="p-5 border-t bg-white">
-              {formError && (
-                <p className="text-xs text-red-500 mb-3 text-center">{formError}</p>
-              )}
+              {formError && <p className="text-xs text-red-500 mb-3 text-center">{formError}</p>}
               <div className="flex gap-3">
                 <button type="button" onClick={closeForm}
                   className="flex-1 py-3 rounded-xl font-semibold border-2 text-sm transition-colors"
-                  style={{ borderColor: '#E2E8F0', color: '#4A5568' }}>
-                  Hủy
-                </button>
+                  style={{ borderColor: '#E2E8F0', color: '#4A5568' }}>Hủy</button>
                 <button type="button" onClick={handleSave} disabled={saving}
                   className="flex-1 py-3 rounded-xl font-black text-sm text-white transition-colors disabled:opacity-50"
                   style={{ backgroundColor: '#2AAEDF' }}
@@ -735,7 +708,7 @@ export default function AdminDashboard() {
                       </svg>
                       {uploading ? 'Đang upload ảnh...' : 'Đang lưu...'}
                     </span>
-                  ) : (editId ? '💾 Lưu thay đổi' : '✅ Thêm sản phẩm')}
+                  ) : (editId ? 'Lưu thay đổi' : 'Thêm sản phẩm')}
                 </button>
               </div>
             </div>
@@ -743,7 +716,7 @@ export default function AdminDashboard() {
         </>
       )}
 
-      {/* ── Toast ── */}
+      {/* Toast */}
       {toast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-2xl text-sm font-bold text-white shadow-2xl"
           style={{ backgroundColor: '#05051F' }}>
@@ -754,7 +727,6 @@ export default function AdminDashboard() {
   );
 }
 
-// Helper label wrapper
 function FormField({ label, children }) {
   return (
     <div>
