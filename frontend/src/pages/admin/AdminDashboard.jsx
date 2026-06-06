@@ -144,6 +144,44 @@ export default function AdminDashboard() {
   const [toast, setToast] = useState('');
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
+  // Change password modal
+  const [showPassModal, setShowPassModal] = useState(false);
+  const [passForm, setPassForm] = useState({ current: '', newPass: '', confirm: '' });
+  const [passError, setPassError] = useState('');
+  const [passSaving, setPassSaving] = useState(false);
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+
+  const openPassModal = () => {
+    setPassForm({ current: '', newPass: '', confirm: '' });
+    setPassError('');
+    setShowPassModal(true);
+  };
+
+  const handleChangePassword = async () => {
+    if (!passForm.current || !passForm.newPass || !passForm.confirm) {
+      setPassError('Vui lòng điền đầy đủ thông tin'); return;
+    }
+    if (passForm.newPass !== passForm.confirm) {
+      setPassError('Mật khẩu mới và xác nhận không khớp'); return;
+    }
+    if (passForm.newPass.length < 6) {
+      setPassError('Mật khẩu mới phải có ít nhất 6 ký tự'); return;
+    }
+    setPassError('');
+    setPassSaving(true);
+    try {
+      await axios.post(`${API}/admin/change-password`,
+        { current_password: passForm.current, new_password: passForm.newPass },
+        getAuth()
+      );
+      setShowPassModal(false);
+      showToast('Đổi mật khẩu thành công!');
+    } catch (err) {
+      setPassError(err.response?.data?.error || 'Lỗi không xác định');
+    } finally { setPassSaving(false); }
+  };
+
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
@@ -302,6 +340,16 @@ export default function AdminDashboard() {
               onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}>
               Xem web
             </Link>
+            <button onClick={openPassModal}
+              className="hidden sm:flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+              style={{ backgroundColor: 'rgba(42,174,223,0.12)', color: '#2AAEDF' }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(42,174,223,0.25)'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(42,174,223,0.12)'}>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+              </svg>
+              Đổi mật khẩu
+            </button>
             <button onClick={logout}
               className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
               style={{ backgroundColor: 'rgba(239,68,68,0.12)', color: '#EF4444' }}
@@ -709,6 +757,135 @@ export default function AdminDashboard() {
                       {uploading ? 'Đang upload ảnh...' : 'Đang lưu...'}
                     </span>
                   ) : (editId ? 'Lưu thay đổi' : 'Thêm sản phẩm')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Change Password Modal */}
+      {showPassModal && (
+        <>
+          <div className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm" onClick={() => setShowPassModal(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl p-7 w-full max-w-sm shadow-2xl">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: 'rgba(42,174,223,0.1)' }}>
+                  <svg className="w-5 h-5" style={{ color: '#2AAEDF' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-black text-base" style={{ color: '#05051F' }}>Đổi mật khẩu</h3>
+                  <p className="text-xs" style={{ color: '#718096' }}>Cập nhật mật khẩu đăng nhập admin</p>
+                </div>
+              </div>
+
+              {passError && (
+                <div className="p-3 rounded-xl text-sm font-medium mb-4"
+                  style={{ backgroundColor: 'rgba(239,68,68,0.08)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.2)' }}>
+                  {passError}
+                </div>
+              )}
+
+              <div className="space-y-3">
+                {/* Current password */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: '#718096' }}>
+                    Mật khẩu hiện tại
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showCurrent ? 'text' : 'password'}
+                      value={passForm.current}
+                      onChange={e => setPassForm(f => ({ ...f, current: e.target.value }))}
+                      placeholder="Nhập mật khẩu hiện tại"
+                      className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none pr-10"
+                      style={{ borderColor: '#E2E8F0' }}
+                      onFocus={e => e.target.style.borderColor = '#2AAEDF'}
+                      onBlur={e => e.target.style.borderColor = '#E2E8F0'}
+                    />
+                    <button type="button" onClick={() => setShowCurrent(v => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5"
+                      style={{ color: '#718096' }}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {showCurrent
+                          ? <><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></>
+                          : <><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></>
+                        }
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                {/* New password */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: '#718096' }}>
+                    Mật khẩu mới
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showNew ? 'text' : 'password'}
+                      value={passForm.newPass}
+                      onChange={e => setPassForm(f => ({ ...f, newPass: e.target.value }))}
+                      placeholder="Tối thiểu 6 ký tự"
+                      className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none pr-10"
+                      style={{ borderColor: '#E2E8F0' }}
+                      onFocus={e => e.target.style.borderColor = '#2AAEDF'}
+                      onBlur={e => e.target.style.borderColor = '#E2E8F0'}
+                    />
+                    <button type="button" onClick={() => setShowNew(v => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5"
+                      style={{ color: '#718096' }}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {showNew
+                          ? <><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></>
+                          : <><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></>
+                        }
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Confirm */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: '#718096' }}>
+                    Xác nhận mật khẩu mới
+                  </label>
+                  <input
+                    type="password"
+                    value={passForm.confirm}
+                    onChange={e => setPassForm(f => ({ ...f, confirm: e.target.value }))}
+                    onKeyDown={e => e.key === 'Enter' && handleChangePassword()}
+                    placeholder="Nhập lại mật khẩu mới"
+                    className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none"
+                    style={{ borderColor: '#E2E8F0' }}
+                    onFocus={e => e.target.style.borderColor = '#2AAEDF'}
+                    onBlur={e => e.target.style.borderColor = '#E2E8F0'}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button onClick={() => setShowPassModal(false)}
+                  className="flex-1 py-3 rounded-xl font-semibold text-sm border-2"
+                  style={{ borderColor: '#E2E8F0', color: '#4A5568' }}>
+                  Hủy
+                </button>
+                <button onClick={handleChangePassword} disabled={passSaving}
+                  className="flex-1 py-3 rounded-xl font-black text-sm text-white disabled:opacity-50"
+                  style={{ backgroundColor: '#2AAEDF' }}>
+                  {passSaving ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                      </svg>
+                      Đang lưu...
+                    </span>
+                  ) : 'Xác nhận đổi'}
                 </button>
               </div>
             </div>

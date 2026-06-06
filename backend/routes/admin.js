@@ -46,17 +46,34 @@ module.exports = (db) => {
     }
   };
 
+  const getAdminPass = () => {
+    const row = db.prepare("SELECT value FROM admin_settings WHERE key = 'admin_password'").get();
+    return row ? row.value : (process.env.ADMIN_PASS || 'vh24sport2025');
+  };
+
   // ── Login ────────────────────────────────────────
   router.post('/login', (req, res) => {
     const { username, password } = req.body;
     const ADMIN_USER = process.env.ADMIN_USER || 'admin';
-    const ADMIN_PASS = process.env.ADMIN_PASS || 'vh24sport2025';
-    if (username === ADMIN_USER && password === ADMIN_PASS) {
+    if (username === ADMIN_USER && password === getAdminPass()) {
       const token = jwt.sign({ admin: true, username }, SECRET, { expiresIn: '8h' });
       res.json({ token, username });
     } else {
       res.status(401).json({ error: 'Sai tên đăng nhập hoặc mật khẩu' });
     }
+  });
+
+  // ── Change password ──────────────────────────────
+  router.post('/change-password', auth, (req, res) => {
+    const { current_password, new_password } = req.body;
+    if (!current_password || !new_password)
+      return res.status(400).json({ error: 'Vui lòng điền đầy đủ thông tin' });
+    if (current_password !== getAdminPass())
+      return res.status(400).json({ error: 'Mật khẩu hiện tại không đúng' });
+    if (new_password.length < 6)
+      return res.status(400).json({ error: 'Mật khẩu mới phải có ít nhất 6 ký tự' });
+    db.prepare("INSERT OR REPLACE INTO admin_settings (key, value) VALUES ('admin_password', ?)").run(new_password);
+    res.json({ success: true });
   });
 
   // ── Upload image → Cloudinary ────────────────────
