@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
-const API = 'http://localhost:5032/api';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5032/api';
 const SIZES = ['36','37','38','39','40','41','42','43','44','45','46'];
 
 const getAuth = () => ({

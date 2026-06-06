@@ -10,7 +10,10 @@ const PORT = process.env.PORT || 5032;
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
+const fs = require('fs');
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'data', 'shoes.db');
+const dbDir = path.dirname(DB_PATH);
+if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
 const db = new Database(DB_PATH);
 
 // Init DB
