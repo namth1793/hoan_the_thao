@@ -1,5 +1,9 @@
 const express = require('express');
 
+const safeJSON = (str, fallback = '[]') => {
+  try { return JSON.parse(str || fallback); } catch { return JSON.parse(fallback); }
+};
+
 module.exports = (db) => {
   const router = express.Router();
 
@@ -40,9 +44,9 @@ module.exports = (db) => {
     const products = db.prepare(query).all(...params);
     const parsed = products.map(p => ({
       ...p,
-      images: JSON.parse(p.images || '[]'),
-      sizes: JSON.parse(p.sizes || '[]'),
-      colors: JSON.parse(p.colors || '[]'),
+      images: safeJSON(p.images),
+      sizes:  safeJSON(p.sizes),
+      colors: safeJSON(p.colors),
     }));
 
     res.json({ products: parsed, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
@@ -57,9 +61,9 @@ module.exports = (db) => {
     if (!p) return res.status(404).json({ error: 'Not found' });
     res.json({
       ...p,
-      images: JSON.parse(p.images || '[]'),
-      sizes: JSON.parse(p.sizes || '[]'),
-      colors: JSON.parse(p.colors || '[]'),
+      images: safeJSON(p.images),
+      sizes:  safeJSON(p.sizes),
+      colors: safeJSON(p.colors),
     });
   });
 

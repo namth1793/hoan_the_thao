@@ -158,7 +158,13 @@ if (!hasNewStructure) {
   ]) insertBrand.run(name, slug);
 }
 
-// Seed sample products if none exist
+// Seed/reseed products: wipe if any product has bad sizes (not valid JSON)
+const firstProduct = db.prepare('SELECT sizes FROM products LIMIT 1').get();
+const hasBadSizes = firstProduct && (() => {
+  try { JSON.parse(firstProduct.sizes || '[]'); return false; } catch { return true; }
+})();
+if (hasBadSizes) db.exec('DELETE FROM products');
+
 const productCount = db.prepare('SELECT COUNT(*) as cnt FROM products').get();
 if (productCount.cnt === 0) {
   const getCat   = (slug) => db.prepare('SELECT id FROM categories WHERE slug = ?').get(slug)?.id;
@@ -169,17 +175,18 @@ if (productCount.cnt === 0) {
     (name,slug,brand_id,category_id,price,sale_price,description,image,sizes,is_featured,is_new,stock,rating,reviews_count)
     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
 
+  const sz = (arr) => JSON.stringify(arr); // sizes must be JSON array
   const products = [
-    ['Áo Bóng Đá JP Đội Tuyển Việt Nam 2024','ao-jp-dt-vn-2024',       getBrand('jp'),       getCat('jp'),            175000,150000,'Áo đội tuyển Việt Nam phiên bản 2024, vải thoáng khí cao cấp.',IMG,'S,M,L,XL,2XL',1,1,50,4.8,24],
-    ['Áo Bóng Đá HD CLB Manchester United',  'ao-hd-mu',               getBrand('hd'),       getCat('hd'),            195000,null,  'Áo CLB MU bản HD chất lượng cao, form chuẩn Euro.',             IMG,'S,M,L,XL,2XL',0,1,40,4.6,18],
-    ['Áo MK Sport Training Xanh',            'ao-mk-training',         getBrand('mk-sport'), getCat('mk'),            130000,null,  'Áo training thể thao MK Sport, thấm hút mồ hôi tốt.',           IMG,'S,M,L,XL',    0,0,60,4.4,12],
-    ['Giày Bóng Đá Wika AG Speed V3',        'giay-wika-ag-v3',        getBrand('wika'),     getCat('giay-wika'),     480000,420000,'Giày đá bóng Wika AG đế đinh nhân tạo, chống trơn trượt.',     IMG,'39,40,41,42,43',1,1,30,4.9,35],
-    ['Giày Bóng Đá Kamito Fuse Pro FG',      'giay-kamito-fuse-pro',   getBrand('kamito'),   getCat('giay-kamito'),   390000,null,  'Giày Kamito đế FG cỏ tự nhiên, mũi giày TPU cứng cáp.',       IMG,'39,40,41,42,43',1,0,25,4.7,28],
-    ['Giày Bóng Đá Mitre Striker TF',        'giay-mitre-striker-tf',  getBrand('mitre'),    getCat('giay-mitre'),    340000,300000,'Giày Mitre đế TF sân cỏ nhân tạo, bền bỉ, giá tốt.',          IMG,'38,39,40,41,42',0,0,35,4.5,15],
-    ['Giày Bóng Đá Zocker TF Elite',         'giay-zocker-tf-elite',   getBrand('zocker'),   getCat('giay-zocker'),   290000,null,  'Giày Zocker TF thiết kế năng động, phù hợp sân cỏ nhân tạo.',  IMG,'38,39,40,41,42',0,1,40,4.5,10],
-    ['Bóng Đá Động Lực UHV 2.05 FIFA',       'bong-dong-luc-uhv205',   getBrand('dong-luc'), getCat('bong-dong-luc'), 300000,270000,'Bóng Động Lực chuẩn FIFA, dùng thi đấu sân cỏ 11 người.',     IMG,null,            1,0,20,4.8,42],
-    ['Bóng Đá Wika AS10 Training',           'bong-wika-as10',         getBrand('wika'),     getCat('bong-wika'),     195000,null,  'Bóng Wika AS10 luyện tập hàng ngày, độ bền cao.',              IMG,null,            0,1,45,4.5,19],
-    ['Giày Thể Thao Wika Cầu Lông Classic',  'giay-wika-cau-long',     getBrand('wika'),     getCat('giay-tt-wika'),  450000,380000,'Giày thể thao Wika đa năng cầu lông / bóng chuyền, chống lật.',IMG,'38,39,40,41,42',0,0,30,4.6,22],
+    ['Áo Bóng Đá JP Đội Tuyển Việt Nam 2024','ao-jp-dt-vn-2024',       getBrand('jp'),       getCat('jp'),            175000,150000,'Áo đội tuyển Việt Nam phiên bản 2024, vải thoáng khí cao cấp.',IMG,sz(['S','M','L','XL','2XL']),  1,1,50,4.8,24],
+    ['Áo Bóng Đá HD CLB Manchester United',  'ao-hd-mu',               getBrand('hd'),       getCat('hd'),            195000,null,  'Áo CLB MU bản HD chất lượng cao, form chuẩn Euro.',             IMG,sz(['S','M','L','XL','2XL']),  0,1,40,4.6,18],
+    ['Áo MK Sport Training Xanh',            'ao-mk-training',         getBrand('mk-sport'), getCat('mk'),            130000,null,  'Áo training thể thao MK Sport, thấm hút mồ hôi tốt.',           IMG,sz(['S','M','L','XL']),        0,0,60,4.4,12],
+    ['Giày Bóng Đá Wika AG Speed V3',        'giay-wika-ag-v3',        getBrand('wika'),     getCat('giay-wika'),     480000,420000,'Giày đá bóng Wika AG đế đinh nhân tạo, chống trơn trượt.',     IMG,sz(['39','40','41','42','43']), 1,1,30,4.9,35],
+    ['Giày Bóng Đá Kamito Fuse Pro FG',      'giay-kamito-fuse-pro',   getBrand('kamito'),   getCat('giay-kamito'),   390000,null,  'Giày Kamito đế FG cỏ tự nhiên, mũi giày TPU cứng cáp.',       IMG,sz(['39','40','41','42','43']), 1,0,25,4.7,28],
+    ['Giày Bóng Đá Mitre Striker TF',        'giay-mitre-striker-tf',  getBrand('mitre'),    getCat('giay-mitre'),    340000,300000,'Giày Mitre đế TF sân cỏ nhân tạo, bền bỉ, giá tốt.',          IMG,sz(['38','39','40','41','42']), 0,0,35,4.5,15],
+    ['Giày Bóng Đá Zocker TF Elite',         'giay-zocker-tf-elite',   getBrand('zocker'),   getCat('giay-zocker'),   290000,null,  'Giày Zocker TF thiết kế năng động, phù hợp sân cỏ nhân tạo.',  IMG,sz(['38','39','40','41','42']), 0,1,40,4.5,10],
+    ['Bóng Đá Động Lực UHV 2.05 FIFA',       'bong-dong-luc-uhv205',   getBrand('dong-luc'), getCat('bong-dong-luc'), 300000,270000,'Bóng Động Lực chuẩn FIFA, dùng thi đấu sân cỏ 11 người.',     IMG,'[]',                         1,0,20,4.8,42],
+    ['Bóng Đá Wika AS10 Training',           'bong-wika-as10',         getBrand('wika'),     getCat('bong-wika'),     195000,null,  'Bóng Wika AS10 luyện tập hàng ngày, độ bền cao.',              IMG,'[]',                         0,1,45,4.5,19],
+    ['Giày Thể Thao Wika Cầu Lông Classic',  'giay-wika-cau-long',     getBrand('wika'),     getCat('giay-tt-wika'),  450000,380000,'Giày thể thao Wika đa năng cầu lông / bóng chuyền, chống lật.',IMG,sz(['38','39','40','41','42']), 0,0,30,4.6,22],
   ];
 
   for (const p of products) ins.run(...p);
