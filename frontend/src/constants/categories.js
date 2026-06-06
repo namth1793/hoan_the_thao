@@ -1,6 +1,6 @@
 export const CATEGORIES = [
   {
-    label: 'ÁO CLB, ĐT', slug: 'ao-clb-dt', icon: '👕',
+    label: 'ÁO CLB, ĐT', slug: 'ao-clb-dt',
     children: [
       { label: 'JP', slug: 'jp' },
       { label: 'HD', slug: 'hd' },
@@ -13,7 +13,7 @@ export const CATEGORIES = [
     ],
   },
   {
-    label: 'GIÀY BÓNG ĐÁ', slug: 'giay-bong-da', icon: '👟',
+    label: 'GIÀY BÓNG ĐÁ', slug: 'giay-bong-da',
     children: [
       { label: 'Giày Wika', slug: 'giay-wika' },
       { label: 'Giày Kamito', slug: 'giay-kamito' },
@@ -25,7 +25,7 @@ export const CATEGORIES = [
     ],
   },
   {
-    label: 'QUẢ BÓNG ĐÁ', slug: 'qua-bong-da', icon: '⚽',
+    label: 'QUẢ BÓNG ĐÁ', slug: 'qua-bong-da',
     children: [
       { label: 'Bóng Động Lực', slug: 'bong-dong-luc' },
       { label: 'Bóng Wika', slug: 'bong-wika' },
@@ -35,7 +35,7 @@ export const CATEGORIES = [
     ],
   },
   {
-    label: 'GIÀY CẦU LÔNG - BC - PK', slug: 'giay-cau-long-bc-pk', icon: '🏸',
+    label: 'GIÀY CẦU LÔNG - BC - PK', slug: 'giay-cau-long-bc-pk',
     children: [
       { label: 'Giày Thể Thao Wika', slug: 'giay-tt-wika' },
       { label: 'Giày Thể Thao Lefus', slug: 'giay-tt-lefus' },
@@ -44,21 +44,21 @@ export const CATEGORIES = [
     ],
   },
   {
-    label: 'ÁO THỂ THAO - POLO', slug: 'ao-the-thao-polo', icon: '🎽',
+    label: 'ÁO THỂ THAO - POLO', slug: 'ao-the-thao-polo',
     children: [
       { label: 'Áo Polo', slug: 'ao-polo' },
       { label: 'Quần Áo Thể Thao', slug: 'quan-ao-the-thao' },
     ],
   },
   {
-    label: 'PICKLEBALL', slug: 'pickleball', icon: '🏓',
+    label: 'PICKLEBALL', slug: 'pickleball',
     children: [
       { label: 'Vợt Pickleball', slug: 'vot-pickleball' },
       { label: 'Phụ Kiện Pickleball', slug: 'phu-kien-pickleball' },
     ],
   },
   {
-    label: 'BÓNG CHUYỀN', slug: 'bong-chuyen', icon: '🏐',
+    label: 'BÓNG CHUYỀN', slug: 'bong-chuyen',
     children: [
       { label: 'Quả Bóng Chuyền', slug: 'qua-bong-chuyen' },
       { label: 'Áo Bóng Chuyền', slug: 'ao-bong-chuyen' },
