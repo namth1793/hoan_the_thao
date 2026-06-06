@@ -138,7 +138,8 @@ export default function Navbar() {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Desktop: text Zalo button */}
             <a href={ZALO_URL} target="_blank" rel="noopener noreferrer"
               className="hidden sm:flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg transition-colors duration-200"
               style={{ backgroundColor: 'rgba(42,174,223,0.15)', color: '#2AAEDF' }}
@@ -148,6 +149,30 @@ export default function Navbar() {
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/>
               </svg>
               0334 661 392
+            </a>
+
+            {/* Mobile: phone icon button */}
+            <a href="tel:0334661392"
+              className="sm:hidden p-2 rounded-xl text-white transition-colors duration-200"
+              style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
+              aria-label="Gọi điện"
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+              </svg>
+            </a>
+
+            {/* Mobile: Zalo icon button */}
+            <a href={ZALO_URL} target="_blank" rel="noopener noreferrer"
+              className="sm:hidden p-2 rounded-xl transition-colors duration-200"
+              style={{ backgroundColor: 'rgba(42,174,223,0.2)', color: '#2AAEDF' }}
+              aria-label="Zalo"
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = '#2AAEDF'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(42,174,223,0.2)'}>
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/>
+              </svg>
             </a>
             <button onClick={() => setIsOpen(true)}
               className="relative p-2 sm:p-2.5 rounded-xl text-white transition-colors duration-200 flex items-center gap-1"
