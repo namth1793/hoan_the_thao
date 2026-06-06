@@ -81,9 +81,14 @@ db.exec(`
   );
 `);
 
-// Seed data
-const catCount = db.prepare('SELECT COUNT(*) as cnt FROM categories').get();
-if (catCount.cnt === 0) {
+// Migration: add columns missing in old Railway deployments
+try { db.exec('ALTER TABLE categories ADD COLUMN parent_id INTEGER DEFAULT NULL'); } catch (_) {}
+try { db.exec('ALTER TABLE categories ADD COLUMN sort_order INTEGER DEFAULT 0'); } catch (_) {}
+
+// Seed/reseed: detect old structure (no ao-clb-dt) and reseed
+const hasNewStructure = db.prepare("SELECT COUNT(*) as cnt FROM categories WHERE slug = 'ao-clb-dt'").get().cnt > 0;
+if (!hasNewStructure) {
+  db.exec('DELETE FROM products; DELETE FROM categories; DELETE FROM brands;');
   const insertParent = db.prepare('INSERT INTO categories (name, slug, sort_order) VALUES (?, ?, ?)');
   const insertChild  = db.prepare('INSERT INTO categories (name, slug, parent_id, sort_order) VALUES (?, ?, ?, ?)');
 
