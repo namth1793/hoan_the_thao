@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import ProductCard from '../components/ProductCard';
+import { CATEGORIES } from '../constants/categories';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5032/api';
 
@@ -10,8 +11,8 @@ export default function Products() {
   const [products, setProducts] = useState([]);
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
-  const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
+  const [openParents, setOpenParents] = useState({});
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -40,7 +41,6 @@ export default function Products() {
   }, [category, brand, sort, search, featured, page]);
 
   useEffect(() => {
-    axios.get(`${API}/categories`).then(r => setCategories(r.data));
     axios.get(`${API}/brands`).then(r => setBrands(r.data));
   }, []);
 
@@ -71,9 +71,9 @@ export default function Products() {
       {/* Page header */}
       <div className="py-12" style={{ backgroundColor: '#05051F' }}>
         <div className="max-w-7xl mx-auto px-4">
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#2AAEDF' }}>SoccerPro Store</p>
+          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#2AAEDF' }}>VH24 SPORT</p>
           <h1 className="text-3xl font-black text-white">Tất Cả Sản Phẩm</h1>
-          <p className="mt-2" style={{ color: 'rgba(255,255,255,0.5)' }}>Tìm kiếm giày đá bóng phù hợp với bạn</p>
+          <p className="mt-2" style={{ color: 'rgba(255,255,255,0.5)' }}>Trang thiết bị thể thao chính hãng</p>
         </div>
       </div>
 
@@ -118,14 +118,50 @@ export default function Products() {
           {/* Sidebar */}
           <aside className={`w-52 flex-shrink-0 space-y-5 ${sidebarOpen ? 'block' : 'hidden md:block'}`}>
             <div className="rounded-2xl p-4" style={{ backgroundColor: '#F7F9FC', border: '1px solid rgba(5,5,31,0.06)' }}>
-              <h3 className="font-black text-xs uppercase tracking-widest mb-3" style={{ color: '#05051F' }}>Loại Sân</h3>
+              <h3 className="font-black text-xs uppercase tracking-widest mb-3" style={{ color: '#05051F' }}>Danh mục</h3>
               <div className="space-y-0.5">
-                <FilterBtn active={!category} onClick={() => setFilter('category', '')}>Tất cả</FilterBtn>
-                {categories.map(c => (
-                  <FilterBtn key={c.id} active={category === c.slug} onClick={() => setFilter('category', c.slug)}>
-                    {c.name}
-                  </FilterBtn>
-                ))}
+                <FilterBtn active={!category} onClick={() => setFilter('category', '')}>Tất cả sản phẩm</FilterBtn>
+                {CATEGORIES.map(cat => {
+                  const isParentActive = category === cat.slug;
+                  const isChildActive  = cat.children.some(c => c.slug === category);
+                  const isOpen = openParents[cat.slug] ?? isChildActive;
+                  return (
+                    <div key={cat.slug}>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setFilter('category', cat.slug)}
+                          className="flex-1 text-left text-sm px-3 py-2 rounded-lg transition-colors font-bold"
+                          style={{
+                            backgroundColor: isParentActive ? 'rgba(42,174,223,0.1)' : 'transparent',
+                            color: isParentActive ? '#2AAEDF' : '#05051F',
+                          }}>
+                          {cat.icon} {cat.label}
+                        </button>
+                        <button
+                          onClick={() => setOpenParents(p => ({ ...p, [cat.slug]: !isOpen }))}
+                          className="p-1 rounded-md flex-shrink-0"
+                          style={{ color: '#718096' }}>
+                          <svg className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7"/>
+                          </svg>
+                        </button>
+                      </div>
+                      {isOpen && (
+                        <div className="ml-3 border-l pl-2 space-y-0.5 mt-0.5"
+                          style={{ borderColor: 'rgba(42,174,223,0.2)' }}>
+                          {cat.children.map(child => (
+                            <FilterBtn key={child.slug}
+                              active={category === child.slug}
+                              onClick={() => setFilter('category', child.slug)}>
+                              {child.label}
+                            </FilterBtn>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

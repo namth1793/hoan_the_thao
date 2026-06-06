@@ -2,16 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import ProductCard from '../components/ProductCard';
+import { CATEGORIES } from '../constants/categories';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5032/api';
 const ZALO_URL = 'https://zalo.me/0334661392';
-
-const CATS = [
-  { label: 'Sân Cỏ Tự Nhiên', sub: 'FG · Firm Ground', icon: '🌿', slug: 'san-co-tu-nhien' },
-  { label: 'Sân Cỏ Nhân Tạo', sub: 'AG · Artificial Ground', icon: '🏟️', slug: 'san-co-nhan-tao' },
-  { label: 'Sân Futsal', sub: 'IC · Indoor Court', icon: '🏠', slug: 'san-futsal' },
-  { label: 'Sân Cứng', sub: 'TF · Turf', icon: '🏙️', slug: 'san-cung' },
-];
 
 const REASONS = [
   { icon: '✅', title: '100% Chính Hãng', desc: 'Phân phối chính thức từ hơn 30 thương hiệu lớn.' },
@@ -72,19 +66,19 @@ export default function Home() {
       <section className="py-16" style={{ backgroundColor: '#F7F9FC' }}>
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-10">
-            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#2AAEDF' }}>Lựa chọn theo nhu cầu</p>
-            <h2 className="text-2xl font-black" style={{ color: '#05051F' }}>Phân Loại Theo Mặt Sân</h2>
+            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#2AAEDF' }}>Khám phá theo danh mục</p>
+            <h2 className="text-2xl font-black" style={{ color: '#05051F' }}>Danh Mục Sản Phẩm</h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {CATS.map(cat => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {CATEGORIES.map(cat => (
               <Link key={cat.slug} to={`/san-pham?category=${cat.slug}`}
-                className="group bg-white rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1"
+                className="group bg-white rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1"
                 style={{ border: '1px solid rgba(5,5,31,0.08)' }}
                 onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 16px 40px rgba(42,174,223,0.15)'; e.currentTarget.style.borderColor = '#2AAEDF'; }}
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'rgba(5,5,31,0.08)'; }}>
                 <div className="text-3xl mb-3">{cat.icon}</div>
-                <h3 className="font-bold text-sm mb-0.5" style={{ color: '#05051F' }}>{cat.label}</h3>
-                <p className="text-xs" style={{ color: '#718096' }}>{cat.sub}</p>
+                <h3 className="font-bold text-sm leading-snug" style={{ color: '#05051F' }}>{cat.label}</h3>
+                <p className="text-xs mt-1" style={{ color: '#2AAEDF' }}>{cat.children.length} loại</p>
               </Link>
             ))}
           </div>

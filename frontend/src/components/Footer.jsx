@@ -36,13 +36,16 @@ export default function Footer() {
 
         {/* Products */}
         <div>
-          <h3 className="font-bold text-white mb-4 text-xs uppercase tracking-widest">Sản phẩm</h3>
+          <h3 className="font-bold text-white mb-4 text-xs uppercase tracking-widest">Danh mục</h3>
           <ul className="space-y-2.5">
             {[
-              ['Sân Cỏ Tự Nhiên (FG)', 'san-co-tu-nhien'],
-              ['Sân Cỏ Nhân Tạo (AG)', 'san-co-nhan-tao'],
-              ['Sân Futsal (IC)', 'san-futsal'],
-              ['Sân Cứng (TF)', 'san-cung'],
+              ['Áo CLB, ĐT', 'ao-clb-dt'],
+              ['Giày Bóng Đá', 'giay-bong-da'],
+              ['Quả Bóng Đá', 'qua-bong-da'],
+              ['Giày Cầu Lông - BC - PK', 'giay-cau-long-bc-pk'],
+              ['Áo Thể Thao - Polo', 'ao-the-thao-polo'],
+              ['Pickleball', 'pickleball'],
+              ['Bóng Chuyền', 'bong-chuyen'],
             ].map(([label, slug]) => (
               <li key={slug}>
                 <Link to={`/san-pham?category=${slug}`}
@@ -61,14 +64,14 @@ export default function Footer() {
         <div>
           <h3 className="font-bold text-white mb-4 text-xs uppercase tracking-widest">Thương hiệu</h3>
           <ul className="space-y-2.5">
-            {['Nike', 'Adidas', 'Puma', 'New Balance', 'Mizuno'].map(b => (
-              <li key={b}>
-                <Link to={`/san-pham?brand=${b.toLowerCase().replace(' ', '-')}`}
+            {[['Wika','wika'],['Kamito','kamito'],['Jogarbola','jogarbola'],['Động Lực','dong-luc'],['Zocker','zocker']].map(([name, slug]) => (
+              <li key={slug}>
+                <Link to={`/san-pham?brand=${slug}`}
                   className="text-sm transition-colors duration-200 block"
                   style={{ color: 'rgba(255,255,255,0.6)' }}
                   onMouseEnter={e => e.target.style.color = '#2AAEDF'}
                   onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.6)'}>
-                  {b}
+                  {name}
                 </Link>
               </li>
             ))}

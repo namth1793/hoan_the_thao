@@ -12,7 +12,14 @@ module.exports = (db) => {
       WHERE 1=1`;
     const params = [];
 
-    if (category) { query += ` AND c.slug = ?`; params.push(category); }
+    if (category) {
+      const parent = db.prepare('SELECT id FROM categories WHERE slug = ? AND parent_id IS NULL').get(category);
+      if (parent) {
+        query += ` AND c.parent_id = ?`; params.push(parent.id);
+      } else {
+        query += ` AND c.slug = ?`; params.push(category);
+      }
+    }
     if (brand) { query += ` AND b.slug = ?`; params.push(brand); }
     if (min_price) { query += ` AND p.price >= ?`; params.push(Number(min_price)); }
     if (max_price) { query += ` AND p.price <= ?`; params.push(Number(max_price)); }

@@ -185,7 +185,8 @@ export default function AdminDashboard() {
 
   const openAdd = () => {
     setEditId(null);
-    setForm({ ...defaultForm, brand_id: brands[0]?.id || '', category_id: cats[0]?.id || '' });
+    const firstChild = cats.find(c => c.parent_id);
+    setForm({ ...defaultForm, brand_id: brands[0]?.id || '', category_id: firstChild?.id || '' });
     setExistingImages([]);
     setNewFiles([]);
     setFormError('');
@@ -378,7 +379,7 @@ export default function AdminDashboard() {
               <table className="w-full">
                 <thead>
                   <tr style={{ backgroundColor: '#F7F9FC', borderBottom: '1px solid rgba(5,5,31,0.08)' }}>
-                    {['Sản phẩm', 'Thương hiệu', 'Loại sân', 'Giá bán', 'Tồn kho', 'Trạng thái', 'Thao tác'].map(h => (
+                    {['Sản phẩm', 'Thương hiệu', 'Danh mục', 'Giá bán', 'Tồn kho', 'Trạng thái', 'Thao tác'].map(h => (
                       <th key={h} className="text-left px-4 py-3 text-xs font-bold uppercase tracking-wider"
                         style={{ color: '#718096' }}>{h}</th>
                     ))}
@@ -583,11 +584,17 @@ export default function AdminDashboard() {
                         {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                       </select>
                     </FormField>
-                    <FormField label="Loại sân">
+                    <FormField label="Danh mục">
                       <select value={form.category_id} onChange={e => setForm({ ...form, category_id: e.target.value })}
                         className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none bg-white cursor-pointer"
                         style={{ borderColor: '#E2E8F0' }}>
-                        {cats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        {cats.filter(c => !c.parent_id).map(parent => (
+                          <optgroup key={parent.id} label={parent.name}>
+                            {cats.filter(c => c.parent_id === parent.id).map(child => (
+                              <option key={child.id} value={child.id}>{child.name}</option>
+                            ))}
+                          </optgroup>
+                        ))}
                       </select>
                     </FormField>
                   </div>
