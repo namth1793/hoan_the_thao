@@ -35,55 +35,12 @@ export default function Home() {
     <div className="pt-16">
       {/* ── HERO BANNER ── */}
       <section className="relative overflow-hidden" style={{ minHeight: '75vh' }}>
-        {/* Full-bleed banner image */}
         <img
           src="/banner.jpg"
           alt="VH24 SPORT Phân Phối 2026"
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
-        {/* Gradient overlay — bottom for CTA readability */}
-        <div className="absolute inset-0"
-          style={{ background: 'linear-gradient(to bottom, rgba(5,5,31,0.25) 0%, rgba(5,5,31,0.15) 40%, rgba(5,5,31,0.85) 100%)' }} />
-
-        {/* Hero content — bottom aligned */}
-        <div className="relative flex flex-col justify-end min-h-[75vh] pb-12">
-          <div className="max-w-7xl mx-auto px-4 w-full">
-            <div className="max-w-2xl">
-              <div className="flex items-center gap-3 mb-4">
-                <img src="/logo.jpg" alt="VH24 SPORT" className="h-12 w-12 rounded-xl object-cover shadow-lg" />
-                <div>
-                  <p className="font-black text-white text-xl leading-none">VH24 SPORT</p>
-                  <p className="text-sm" style={{ color: '#2AAEDF' }}>Nhà phân phối chính hãng</p>
-                </div>
-              </div>
-
-              <h1 className="text-3xl md:text-5xl font-black text-white leading-tight mb-3">
-                Giày Đá Bóng<br />
-                <span style={{ color: '#2AAEDF' }}>Chính Hãng 2026</span>
-              </h1>
-              <p className="text-base mb-6" style={{ color: 'rgba(255,255,255,0.75)' }}>
-                Phân phối chính thức từ hơn 30 thương hiệu · Nike, Adidas, Puma, Mizuno và nhiều hơn nữa
-              </p>
-
-              <div className="flex flex-wrap gap-3">
-                <Link to="/san-pham"
-                  className="inline-flex items-center gap-2 font-bold px-7 py-3.5 rounded-xl text-white transition-colors duration-200"
-                  style={{ backgroundColor: '#2AAEDF' }}
-                  onMouseEnter={e => e.currentTarget.style.backgroundColor = '#2093BE'}
-                  onMouseLeave={e => e.currentTarget.style.backgroundColor = '#2AAEDF'}>
-                  Xem sản phẩm →
-                </Link>
-                <a href={ZALO_URL} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 font-bold px-7 py-3.5 rounded-xl border-2 transition-colors duration-200"
-                  style={{ borderColor: 'rgba(255,255,255,0.6)', color: '#fff' }}
-                  onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.15)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}>
-                  💬 Nhắn Zalo ngay
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div className="relative min-h-[75vh]" />
       </section>
 
       {/* ── STATS BAR ── */}
