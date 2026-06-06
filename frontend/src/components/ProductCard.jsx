@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
+import ProductModal from './ProductModal';
 
 const ZALO_URL = 'https://zalo.me/0334661392';
 
@@ -7,6 +8,7 @@ export default function ProductCard({ product }) {
   const { addToCart } = useCart();
   const [imgIdx, setImgIdx] = useState(0);
   const [addedAnim, setAddedAnim] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const allImages = [product.image, ...(product.images || [])].filter(Boolean);
   const price = product.sale_price || product.price;
@@ -26,13 +28,18 @@ export default function ProductCard({ product }) {
   const isOutOfStock = product.stock <= 0;
 
   return (
+    <>
+    {showModal && <ProductModal product={product} onClose={() => setShowModal(false)} />}
     <div className="card-product group flex flex-col">
       {/* Image Gallery */}
-      <div className="relative overflow-hidden flex-shrink-0" style={{ backgroundColor: '#F7F9FC', aspectRatio: '1/1' }}>
+      <div
+        className="relative overflow-hidden flex-shrink-0 cursor-pointer"
+        style={{ backgroundColor: '#F7F9FC', aspectRatio: '1/1' }}
+        onClick={() => setShowModal(true)}>
         <img
           src={allImages[imgIdx]}
           alt={product.name}
-          className="w-full h-full object-contain p-2 sm:p-3 transition-all duration-300"
+          className="w-full h-full object-contain p-2 sm:p-3 transition-all duration-300 group-hover:scale-105"
           onError={e => { e.target.src = 'https://placehold.co/400x400/EBF8FD/2AAEDF?text=VH24'; }}
         />
 
@@ -86,7 +93,10 @@ export default function ProductCard({ product }) {
         <p className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: '#718096', fontSize: '10px' }}>
           {product.brand_name}
         </p>
-        <h3 className="font-bold leading-snug line-clamp-2 mb-1.5 flex-1" style={{ color: '#05051F', fontSize: '12px' }}>
+        <h3
+          onClick={() => setShowModal(true)}
+          className="font-bold leading-snug line-clamp-2 mb-1.5 flex-1 cursor-pointer hover:underline"
+          style={{ color: '#05051F', fontSize: '12px' }}>
           {product.name}
         </h3>
         <div className="flex items-baseline gap-1.5 mb-1">
@@ -154,5 +164,5 @@ export default function ProductCard({ product }) {
         </div>
       </div>
     </div>
-  );
+    </>;
 }
