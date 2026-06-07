@@ -102,12 +102,20 @@ try { db.exec('ALTER TABLE products ADD COLUMN sold_count INTEGER DEFAULT 0'); }
     if (!db.prepare('SELECT id FROM categories WHERE slug = ?').get(slug))
       db.prepare('INSERT INTO categories (name, slug, sort_order) VALUES (?, ?, ?)').run(name, slug, sort);
   };
-  _addChild('Giày Pickleball',   'giay-pickleball',  'pickleball',       3);
-  _addParent('PHỤ KIỆN BÓNG ĐÁ', 'phu-kien-bong-da', 8);
-  _addChild('Túi Đựng Bóng',     'tui-dung-bong',    'phu-kien-bong-da', 1);
-  _addChild('Băng Bảo Vệ',       'bang-bao-ve',      'phu-kien-bong-da', 2);
-  _addChild('Tất Thể Thao',      'tat-the-thao',     'phu-kien-bong-da', 3);
-  _addChild('Găng Tay Thủ Môn',  'gang-tay-thu-mon', 'phu-kien-bong-da', 4);
+  _addChild('Giày Pickleball',    'giay-pickleball',    'pickleball',       3);
+  _addParent('PHỤ KIỆN BÓNG ĐÁ', 'phu-kien-bong-da',   8);
+  _addChild('Túi Đựng Bóng',     'tui-dung-bong',      'phu-kien-bong-da', 1);
+  _addChild('Băng Bảo Vệ',       'bang-bao-ve',        'phu-kien-bong-da', 2);
+  _addChild('Tất Thể Thao',      'tat-the-thao',       'phu-kien-bong-da', 3);
+  _addChild('Găng Tay Thủ Môn',  'gang-tay-thu-mon',   'phu-kien-bong-da', 4);
+  _addChild('Bình Xịt Thể Thao', 'binh-xit-the-thao',  'phu-kien-bong-da', 5);
+  _addChild('Giày Bóng Chuyền',  'giay-bong-chuyen',   'bong-chuyen',      4);
+  _addParent('GIÀY CHẠY BỘ',     'giay-chay-bo',       9);
+  _addChild('Giày Chạy Bộ Nam',  'giay-chay-bo-nam',   'giay-chay-bo',     1);
+  _addChild('Giày Chạy Bộ Nữ',   'giay-chay-bo-nu',    'giay-chay-bo',     2);
+  _addChild('Giày Chạy Bộ Trẻ Em','giay-chay-bo-tre-em','giay-chay-bo',    3);
+  // Rename Giày Mitre → Giày Mira (keep slug to preserve existing products)
+  db.prepare("UPDATE categories SET name = 'Giày Mira' WHERE slug = 'giay-mitre' AND name = 'Giày Mitre'").run();
 }
 
 // Seed/reseed: detect old structure (no ao-clb-dt) and reseed
@@ -142,7 +150,7 @@ if (!hasNewStructure) {
   insertChild.run('Giày Kamito',   'giay-kamito',   p2, 2);
   insertChild.run('Giày Jogarbola','giay-jogarbola', p2, 3);
   insertChild.run('Giày Akka',     'giay-akka',     p2, 4);
-  insertChild.run('Giày Mitre',    'giay-mitre',    p2, 5);
+  insertChild.run('Giày Mira',     'giay-mitre',    p2, 5);
   insertChild.run('Giày Zocker',   'giay-zocker',   p2, 6);
   insertChild.run('Giày Trẻ Em',   'giay-tre-em',   p2, 7);
 
@@ -169,15 +177,23 @@ if (!hasNewStructure) {
   insertChild.run('Giày Pickleball',    'giay-pickleball',    p6, 3);
 
   // Children of BÓNG CHUYỀN
-  insertChild.run('Quả Bóng Chuyền',  'qua-bong-chuyen', p7, 1);
-  insertChild.run('Áo Bóng Chuyền',   'ao-bong-chuyen',  p7, 2);
-  insertChild.run('PK Bóng Chuyền',   'pk-bong-chuyen',  p7, 3);
+  insertChild.run('Quả Bóng Chuyền',  'qua-bong-chuyen',  p7, 1);
+  insertChild.run('Áo Bóng Chuyền',   'ao-bong-chuyen',   p7, 2);
+  insertChild.run('Giày Bóng Chuyền', 'giay-bong-chuyen', p7, 3);
+  insertChild.run('PK Bóng Chuyền',   'pk-bong-chuyen',   p7, 4);
 
   // Children of PHỤ KIỆN BÓNG ĐÁ
-  insertChild.run('Túi Đựng Bóng',     'tui-dung-bong',   p8, 1);
-  insertChild.run('Băng Bảo Vệ',       'bang-bao-ve',     p8, 2);
-  insertChild.run('Tất Thể Thao',      'tat-the-thao',    p8, 3);
-  insertChild.run('Găng Tay Thủ Môn',  'gang-tay-thu-mon',p8, 4);
+  insertChild.run('Túi Đựng Bóng',     'tui-dung-bong',    p8, 1);
+  insertChild.run('Băng Bảo Vệ',       'bang-bao-ve',      p8, 2);
+  insertChild.run('Tất Thể Thao',      'tat-the-thao',     p8, 3);
+  insertChild.run('Găng Tay Thủ Môn',  'gang-tay-thu-mon', p8, 4);
+  insertChild.run('Bình Xịt Thể Thao', 'binh-xit-the-thao',p8, 5);
+
+  // Parent + children of GIÀY CHẠY BỘ
+  const p9 = insertParent.run('GIÀY CHẠY BỘ', 'giay-chay-bo', 9).lastInsertRowid;
+  insertChild.run('Giày Chạy Bộ Nam',   'giay-chay-bo-nam',    p9, 1);
+  insertChild.run('Giày Chạy Bộ Nữ',   'giay-chay-bo-nu',     p9, 2);
+  insertChild.run('Giày Chạy Bộ Trẻ Em','giay-chay-bo-tre-em', p9, 3);
 
   // Brands
   const insertBrand = db.prepare('INSERT INTO brands (name, slug) VALUES (?, ?)');

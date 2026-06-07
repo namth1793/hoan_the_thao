@@ -19,7 +19,7 @@ export const CATEGORIES = [
       { label: 'Giày Kamito', slug: 'giay-kamito' },
       { label: 'Giày Jogarbola', slug: 'giay-jogarbola' },
       { label: 'Giày Akka', slug: 'giay-akka' },
-      { label: 'Giày Mitre', slug: 'giay-mitre' },
+      { label: 'Giày Mira', slug: 'giay-mitre' },
       { label: 'Giày Zocker', slug: 'giay-zocker' },
       { label: 'Giày Trẻ Em', slug: 'giay-tre-em' },
     ],
@@ -65,6 +65,7 @@ export const CATEGORIES = [
       { label: 'Băng Bảo Vệ', slug: 'bang-bao-ve' },
       { label: 'Tất Thể Thao', slug: 'tat-the-thao' },
       { label: 'Găng Tay Thủ Môn', slug: 'gang-tay-thu-mon' },
+      { label: 'Bình Xịt Thể Thao', slug: 'binh-xit-the-thao' },
     ],
   },
   {
@@ -72,7 +73,16 @@ export const CATEGORIES = [
     children: [
       { label: 'Quả Bóng Chuyền', slug: 'qua-bong-chuyen' },
       { label: 'Áo Bóng Chuyền', slug: 'ao-bong-chuyen' },
+      { label: 'Giày Bóng Chuyền', slug: 'giay-bong-chuyen' },
       { label: 'PK Bóng Chuyền', slug: 'pk-bong-chuyen' },
+    ],
+  },
+  {
+    label: 'GIÀY CHẠY BỘ', slug: 'giay-chay-bo',
+    children: [
+      { label: 'Giày Chạy Bộ Nam', slug: 'giay-chay-bo-nam' },
+      { label: 'Giày Chạy Bộ Nữ', slug: 'giay-chay-bo-nu' },
+      { label: 'Giày Chạy Bộ Trẻ Em', slug: 'giay-chay-bo-tre-em' },
     ],
   },
 ];

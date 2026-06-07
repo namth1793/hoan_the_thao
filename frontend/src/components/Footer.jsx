@@ -47,6 +47,7 @@ export default function Footer() {
               ['Pickleball', 'pickleball'],
               ['Phụ Kiện Bóng Đá', 'phu-kien-bong-da'],
               ['Bóng Chuyền', 'bong-chuyen'],
+              ['Giày Chạy Bộ', 'giay-chay-bo'],
             ].map(([label, slug]) => (
               <li key={slug}>
                 <Link to={`/san-pham?category=${slug}`}
