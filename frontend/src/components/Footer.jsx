@@ -45,6 +45,7 @@ export default function Footer() {
               ['Giày CL - BC - PK', 'giay-cau-long-bc-pk'],
               ['Áo Thể Thao - Polo', 'ao-the-thao-polo'],
               ['Pickleball', 'pickleball'],
+              ['Phụ Kiện Bóng Đá', 'phu-kien-bong-da'],
               ['Bóng Chuyền', 'bong-chuyen'],
             ].map(([label, slug]) => (
               <li key={slug}>

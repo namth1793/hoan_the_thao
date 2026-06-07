@@ -55,6 +55,16 @@ export const CATEGORIES = [
     children: [
       { label: 'Vợt Pickleball', slug: 'vot-pickleball' },
       { label: 'Phụ Kiện Pickleball', slug: 'phu-kien-pickleball' },
+      { label: 'Giày Pickleball', slug: 'giay-pickleball' },
+    ],
+  },
+  {
+    label: 'PHỤ KIỆN BÓNG ĐÁ', slug: 'phu-kien-bong-da',
+    children: [
+      { label: 'Túi Đựng Bóng', slug: 'tui-dung-bong' },
+      { label: 'Băng Bảo Vệ', slug: 'bang-bao-ve' },
+      { label: 'Tất Thể Thao', slug: 'tat-the-thao' },
+      { label: 'Găng Tay Thủ Môn', slug: 'gang-tay-thu-mon' },
     ],
   },
   {

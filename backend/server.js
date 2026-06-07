@@ -90,6 +90,25 @@ db.exec(`
 try { db.exec('ALTER TABLE categories ADD COLUMN parent_id INTEGER DEFAULT NULL'); } catch (_) {}
 try { db.exec('ALTER TABLE categories ADD COLUMN sort_order INTEGER DEFAULT 0'); } catch (_) {}
 
+// Migration: insert new categories if not yet present (for existing Railway DB)
+{
+  const _addChild = (name, slug, parentSlug, sort) => {
+    if (db.prepare('SELECT id FROM categories WHERE slug = ?').get(slug)) return;
+    const parent = db.prepare('SELECT id FROM categories WHERE slug = ?').get(parentSlug);
+    if (parent) db.prepare('INSERT INTO categories (name, slug, parent_id, sort_order) VALUES (?, ?, ?, ?)').run(name, slug, parent.id, sort);
+  };
+  const _addParent = (name, slug, sort) => {
+    if (!db.prepare('SELECT id FROM categories WHERE slug = ?').get(slug))
+      db.prepare('INSERT INTO categories (name, slug, sort_order) VALUES (?, ?, ?)').run(name, slug, sort);
+  };
+  _addChild('Giày Pickleball',   'giay-pickleball',  'pickleball',       3);
+  _addParent('PHỤ KIỆN BÓNG ĐÁ', 'phu-kien-bong-da', 8);
+  _addChild('Túi Đựng Bóng',     'tui-dung-bong',    'phu-kien-bong-da', 1);
+  _addChild('Băng Bảo Vệ',       'bang-bao-ve',      'phu-kien-bong-da', 2);
+  _addChild('Tất Thể Thao',      'tat-the-thao',     'phu-kien-bong-da', 3);
+  _addChild('Găng Tay Thủ Môn',  'gang-tay-thu-mon', 'phu-kien-bong-da', 4);
+}
+
 // Seed/reseed: detect old structure (no ao-clb-dt) and reseed
 const hasNewStructure = db.prepare("SELECT COUNT(*) as cnt FROM categories WHERE slug = 'ao-clb-dt'").get().cnt > 0;
 if (!hasNewStructure) {
@@ -105,6 +124,7 @@ if (!hasNewStructure) {
   const p5 = insertParent.run('ÁO THỂ THAO - POLO',                    'ao-the-thao-polo',   5).lastInsertRowid;
   const p6 = insertParent.run('PICKLEBALL',                             'pickleball',         6).lastInsertRowid;
   const p7 = insertParent.run('BÓNG CHUYỀN',                           'bong-chuyen',        7).lastInsertRowid;
+  const p8 = insertParent.run('PHỤ KIỆN BÓNG ĐÁ',                     'phu-kien-bong-da',   8).lastInsertRowid;
 
   // Children of ÁO CLB, ĐT
   insertChild.run('JP',                'jp',              p1, 1);
@@ -143,13 +163,20 @@ if (!hasNewStructure) {
   insertChild.run('Quần Áo Thể Thao',  'quan-ao-the-thao', p5, 2);
 
   // Children of PICKLEBALL
-  insertChild.run('Vợt Pickleball',    'vot-pickleball',   p6, 1);
-  insertChild.run('Phụ Kiện Pickleball','phu-kien-pickleball',p6,2);
+  insertChild.run('Vợt Pickleball',     'vot-pickleball',     p6, 1);
+  insertChild.run('Phụ Kiện Pickleball','phu-kien-pickleball', p6, 2);
+  insertChild.run('Giày Pickleball',    'giay-pickleball',    p6, 3);
 
   // Children of BÓNG CHUYỀN
   insertChild.run('Quả Bóng Chuyền',  'qua-bong-chuyen', p7, 1);
   insertChild.run('Áo Bóng Chuyền',   'ao-bong-chuyen',  p7, 2);
   insertChild.run('PK Bóng Chuyền',   'pk-bong-chuyen',  p7, 3);
+
+  // Children of PHỤ KIỆN BÓNG ĐÁ
+  insertChild.run('Túi Đựng Bóng',     'tui-dung-bong',   p8, 1);
+  insertChild.run('Băng Bảo Vệ',       'bang-bao-ve',     p8, 2);
+  insertChild.run('Tất Thể Thao',      'tat-the-thao',    p8, 3);
+  insertChild.run('Găng Tay Thủ Môn',  'gang-tay-thu-mon',p8, 4);
 
   // Brands
   const insertBrand = db.prepare('INSERT INTO brands (name, slug) VALUES (?, ?)');
