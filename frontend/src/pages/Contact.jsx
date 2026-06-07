@@ -71,7 +71,8 @@ export default function Contact() {
             <h2 className="text-lg font-black mb-6" style={{ color: '#05051F' }}>Thông tin liên hệ</h2>
             <div className="space-y-3">
               {[
-                { icon: '📍', title: 'Địa chỉ', text: '79 Thái Thịnh, Hà Trì, Hà Đông, Hà Nội' },
+                { icon: '📍', title: 'Cơ sở 1', text: '79 Thái Thịnh, Đống Đa, Hà Nội' },
+                { icon: '📍', title: 'Cơ sở 2', text: 'Hà Trì, Hà Đông, Hà Nội' },
                 { icon: '💬', title: 'Zalo', text: '0334 661 392', href: ZALO_URL, external: true },
                 { icon: '📞', title: 'Điện thoại', text: '0334 661 392', href: 'tel:0334661392' },
                 { icon: '🕐', title: 'Giờ làm việc', text: '8:00 - 21:00 (T2 - CN)' },
