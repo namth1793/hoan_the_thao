@@ -138,18 +138,11 @@ export default function ProductModal({ product, onClose }) {
                   )}
                 </div>
 
-                {/* Stock + sold */}
-                <div className="flex items-center gap-4 mb-4">
-                  <p className="text-xs font-semibold"
-                    style={{ color: isOutOfStock ? '#EF4444' : isLowStock ? '#F59E0B' : '#22C55E' }}>
-                    {isOutOfStock ? 'Hết hàng' : isLowStock ? `Chỉ còn ${product.stock} sản phẩm` : `Còn hàng (${product.stock} sp)`}
-                  </p>
-                  {product.sold_count > 0 && (
-                    <p className="text-xs font-semibold" style={{ color: '#718096' }}>
-                      Đã bán {product.sold_count >= 1000 ? `${(product.sold_count / 1000).toFixed(1).replace('.0','')}k` : product.sold_count}
-                    </p>
-                  )}
-                </div>
+                {/* Stock status */}
+                <p className="text-xs font-semibold mb-4"
+                  style={{ color: isOutOfStock ? '#EF4444' : isLowStock ? '#F59E0B' : '#22C55E' }}>
+                  {isOutOfStock ? 'Hết hàng' : isLowStock ? `Chỉ còn ${product.stock} sản phẩm` : `Còn hàng (${product.stock} sp)`}
+                </p>
 
                 {/* Description */}
                 {product.description && (
