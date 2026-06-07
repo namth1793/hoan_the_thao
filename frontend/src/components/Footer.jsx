@@ -48,6 +48,7 @@ export default function Footer() {
               ['Phụ Kiện Bóng Đá', 'phu-kien-bong-da'],
               ['Bóng Chuyền', 'bong-chuyen'],
               ['Giày Chạy Bộ', 'giay-chay-bo'],
+              ['QA Bóng Đá Thương Hiệu', 'quan-ao-bong-da-thuong-hieu'],
             ].map(([label, slug]) => (
               <li key={slug}>
                 <Link to={`/san-pham?category=${slug}`}

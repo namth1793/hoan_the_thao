@@ -116,6 +116,25 @@ try { db.exec('ALTER TABLE products ADD COLUMN sold_count INTEGER DEFAULT 0'); }
   _addChild('Giày Chạy Bộ Trẻ Em','giay-chay-bo-tre-em','giay-chay-bo',    3);
   // Rename Giày Mitre → Giày Mira (keep slug to preserve existing products)
   db.prepare("UPDATE categories SET name = 'Giày Mira' WHERE slug = 'giay-mitre' AND name = 'Giày Mitre'").run();
+
+  // QUẦN ÁO BÓNG ĐÁ THƯƠNG HIỆU
+  _addParent('QUẦN ÁO BÓNG ĐÁ THƯƠNG HIỆU', 'quan-ao-bong-da-thuong-hieu', 10);
+  const _qabd = 'quan-ao-bong-da-thuong-hieu';
+  _addChild('Wika',             'qabd-wika',       _qabd,  1);
+  _addChild('Riki',             'qabd-riki',       _qabd,  2);
+  _addChild('Bulbal',           'qabd-bulbal',     _qabd,  3);
+  _addChild('Beyono',           'qabd-beyono',     _qabd,  4);
+  _addChild('Kamito',           'qabd-kamito',     _qabd,  5);
+  _addChild('Mikai',            'qabd-mikai',      _qabd,  6);
+  _addChild('HD',               'qabd-hd',         _qabd,  7);
+  _addChild('Justplay',         'qabd-justplay',   _qabd,  8);
+  _addChild('Dullkill',         'qabd-dullkill',   _qabd,  9);
+  _addChild('CP-Egan-Win',      'qabd-cp-egan-win',_qabd, 10);
+  _addChild('CV',               'qabd-cv',         _qabd, 11);
+  _addChild('Trẻ Em Thương Hiệu','qabd-tre-em',    _qabd, 12);
+  _addChild('Zocker',           'qabd-zocker',     _qabd, 13);
+  _addChild('Jogarbola',        'qabd-jogarbola',  _qabd, 14);
+  _addChild('CR',               'qabd-cr',         _qabd, 15);
 }
 
 // Seed/reseed: detect old structure (no ao-clb-dt) and reseed
@@ -190,10 +209,27 @@ if (!hasNewStructure) {
   insertChild.run('Bình Xịt Thể Thao', 'binh-xit-the-thao',p8, 5);
 
   // Parent + children of GIÀY CHẠY BỘ
-  const p9 = insertParent.run('GIÀY CHẠY BỘ', 'giay-chay-bo', 9).lastInsertRowid;
-  insertChild.run('Giày Chạy Bộ Nam',   'giay-chay-bo-nam',    p9, 1);
-  insertChild.run('Giày Chạy Bộ Nữ',   'giay-chay-bo-nu',     p9, 2);
-  insertChild.run('Giày Chạy Bộ Trẻ Em','giay-chay-bo-tre-em', p9, 3);
+  const p9  = insertParent.run('GIÀY CHẠY BỘ',                  'giay-chay-bo',               9).lastInsertRowid;
+  insertChild.run('Giày Chạy Bộ Nam',    'giay-chay-bo-nam',    p9,  1);
+  insertChild.run('Giày Chạy Bộ Nữ',    'giay-chay-bo-nu',     p9,  2);
+  insertChild.run('Giày Chạy Bộ Trẻ Em','giay-chay-bo-tre-em', p9,  3);
+
+  const p10 = insertParent.run('QUẦN ÁO BÓNG ĐÁ THƯƠNG HIỆU', 'quan-ao-bong-da-thuong-hieu', 10).lastInsertRowid;
+  insertChild.run('Wika',              'qabd-wika',        p10,  1);
+  insertChild.run('Riki',              'qabd-riki',        p10,  2);
+  insertChild.run('Bulbal',            'qabd-bulbal',      p10,  3);
+  insertChild.run('Beyono',            'qabd-beyono',      p10,  4);
+  insertChild.run('Kamito',            'qabd-kamito',      p10,  5);
+  insertChild.run('Mikai',             'qabd-mikai',       p10,  6);
+  insertChild.run('HD',                'qabd-hd',          p10,  7);
+  insertChild.run('Justplay',          'qabd-justplay',    p10,  8);
+  insertChild.run('Dullkill',          'qabd-dullkill',    p10,  9);
+  insertChild.run('CP-Egan-Win',       'qabd-cp-egan-win', p10, 10);
+  insertChild.run('CV',                'qabd-cv',          p10, 11);
+  insertChild.run('Trẻ Em Thương Hiệu','qabd-tre-em',      p10, 12);
+  insertChild.run('Zocker',            'qabd-zocker',      p10, 13);
+  insertChild.run('Jogarbola',         'qabd-jogarbola',   p10, 14);
+  insertChild.run('CR',                'qabd-cr',          p10, 15);
 
   // Brands
   const insertBrand = db.prepare('INSERT INTO brands (name, slug) VALUES (?, ?)');
