@@ -131,14 +131,15 @@ module.exports = (db) => {
     let n = 1;
     while (db.prepare('SELECT id FROM products WHERE slug = ?').get(final)) final = `${slug}-${n++}`;
 
+    const sold_count = Math.floor(Math.random() * 8001) + 2000;
     const r = db.prepare(`INSERT INTO products
-      (name, slug, brand_id, category_id, price, sale_price, description, image, images, sizes, colors, is_featured, is_new, stock, rating, reviews_count)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+      (name, slug, brand_id, category_id, price, sale_price, description, image, images, sizes, colors, is_featured, is_new, stock, rating, reviews_count, sold_count)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
       name, final, brand_id, category_id, Number(price), sale_price ? Number(sale_price) : null,
       description, image || '', JSON.stringify(images || []),
       JSON.stringify(sizes || []), JSON.stringify(colors || []),
       is_featured ? 1 : 0, is_new ? 1 : 0,
-      Number(stock) || 0, Number(rating) || 5.0, Number(reviews_count) || 0
+      Number(stock) || 0, Number(rating) || 5.0, Number(reviews_count) || 0, sold_count
     );
     res.json({ success: true, id: r.lastInsertRowid, slug: final });
   });

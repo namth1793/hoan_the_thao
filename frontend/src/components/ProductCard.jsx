@@ -109,12 +109,19 @@ export default function ProductCard({ product }) {
             </span>
           )}
         </div>
-        <p className="font-medium mb-2.5" style={{
-          color: isOutOfStock ? '#EF4444' : isLowStock ? '#F59E0B' : '#718096',
-          fontSize: '10px',
-        }}>
-          {isOutOfStock ? 'Hết hàng' : isLowStock ? `Còn ${product.stock} sp` : `Còn ${product.stock} sp`}
-        </p>
+        <div className="flex items-center justify-between mb-2.5">
+          <p className="font-medium" style={{
+            color: isOutOfStock ? '#EF4444' : isLowStock ? '#F59E0B' : '#718096',
+            fontSize: '10px',
+          }}>
+            {isOutOfStock ? 'Hết hàng' : isLowStock ? `Còn ${product.stock} sp` : `Còn ${product.stock} sp`}
+          </p>
+          {product.sold_count > 0 && (
+            <p className="font-semibold" style={{ color: '#718096', fontSize: '10px' }}>
+              Đã bán {product.sold_count >= 1000 ? `${(product.sold_count / 1000).toFixed(1).replace('.0','')}k` : product.sold_count}
+            </p>
+          )}
+        </div>
 
         {/* Action Buttons */}
         <div className="flex gap-1.5 mt-auto">
