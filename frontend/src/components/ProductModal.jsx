@@ -23,9 +23,11 @@ export default function ProductModal({ product, onClose }) {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
     document.body.style.overflow = 'hidden';
+    document.body.classList.add('product-modal-open');
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = '';
+      document.body.classList.remove('product-modal-open');
     };
   }, [onClose]);
 

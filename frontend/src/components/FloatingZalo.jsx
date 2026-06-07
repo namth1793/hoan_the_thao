@@ -7,7 +7,7 @@ export default function FloatingZalo() {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="fixed bottom-6 right-4 z-50 flex flex-col items-end gap-2">
+    <div className="zalo-float-container fixed bottom-6 right-4 z-50 flex flex-col items-end gap-2">
 
       {/* Expanded quick-action panel */}
       <div
