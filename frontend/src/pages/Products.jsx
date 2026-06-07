@@ -49,7 +49,7 @@ export default function Products() {
   const setFilter = (key, val) => {
     const p = new URLSearchParams(searchParams);
     if (val) p.set(key, val); else p.delete(key);
-    p.delete('page');
+    if (key !== 'page') p.delete('page');
     setSearchParams(p);
     setSidebarOpen(false);
   };
